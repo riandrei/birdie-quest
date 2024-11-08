@@ -2,6 +2,7 @@ import pygame
 import configs
 import assets
 from objects.background import Background
+from objects.floor import Floor
 
 
 pygame.init()
@@ -16,6 +17,9 @@ sprites = pygame.sprite.LayeredUpdates()
 
 Background(0, sprites)
 Background(1, sprites)
+
+Floor(0, sprites)
+Floor(1, sprites)
 
 while running:
     for event in pygame.event.get():
