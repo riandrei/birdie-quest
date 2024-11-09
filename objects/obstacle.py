@@ -9,6 +9,7 @@ class SmallObstacle(pygame.sprite.Sprite):
         self._layer = Layer.OBSTACLE
         self.image = assets.get_sprite('square-16')
         self.rect = self.image.get_rect(bottomleft=(configs.SCREEN_WIDTH + random.randint(100, 280), random.randint(0, configs.SCREEN_HEIGHT)))
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.speed = 2
         if random.random() < 0.5:  # 33% chance to be faster
@@ -23,11 +24,12 @@ class SmallObstacle(pygame.sprite.Sprite):
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, *groups):
-        self._layer = Layer.OBSTACLE
+        self._layer = Layer.PIPE
         self.gap = 100
 
         self.sprite = assets.get_sprite('pipe-green')
         self.sprite_rect = self.sprite.get_rect()
+
 
         # Define pipe obstacles
         self.pipe_bottom = self.sprite
@@ -39,6 +41,9 @@ class Obstacle(pygame.sprite.Sprite):
         self.image = pygame.Surface((self.sprite_rect.width, self.sprite_rect.height * 2 + self.gap), pygame.SRCALPHA)
         self.image.blit(self.pipe_bottom, self.pipe_bottom_rect)
         self.image.blit(self.pipe_top, self.pipe_top_rect)
+
+        
+        self.mask = pygame.mask.from_surface(self.image)
 
         # Set initial position of pipes
         sprite_floor_height = assets.get_sprite('floor').get_rect().height

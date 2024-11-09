@@ -2,6 +2,9 @@ import assets
 import pygame
 import configs
 from layer import Layer
+from objects.obstacle import Obstacle
+from objects.obstacle import SmallObstacle
+from objects.floor import Floor
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self, *groups):
@@ -17,6 +20,8 @@ class Bird(pygame.sprite.Sprite):
         sprite_floor_height = assets.get_sprite('floor').get_rect().height
         self.rect = self.image.get_rect(topleft=(0, (configs.SCREEN_HEIGHT - sprite_floor_height) // 2))
 
+
+        self.mask = pygame.mask.from_surface(self.image)
         # Initialize target position
         self.target_y = self.rect.y
         super().__init__(*groups)
@@ -39,3 +44,10 @@ class Bird(pygame.sprite.Sprite):
         # Update target y position based on the marker
         screen_center = configs.SCREEN_HEIGHT / 2
         self.target_y = int((marker - 0.5) * 1.5 * configs.SCREEN_HEIGHT + screen_center)
+
+    def check_collision(self, sprites):
+        for sprite in sprites:
+            if (type(sprite) is Obstacle or type(sprite) is SmallObstacle or type(sprite) is Floor) and sprite.mask.overlap(self.mask, (self.rect.x - sprite.rect.x, self.rect.y - sprite.rect.y) or self.rect.bottom < 0):
+                return True
+        return False
+                
