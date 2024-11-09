@@ -60,6 +60,7 @@ class Obstacle(pygame.sprite.Sprite):
         for _ in range(random.randint(3, 8)):  # Randomize the number of smaller obstacles
             small_obstacle = SmallObstacle(self.gap_top_y, self.gap_bottom_y, *groups)
 
+        self.passed = False
         super().__init__(*groups)
 
     def update(self):
@@ -68,3 +69,9 @@ class Obstacle(pygame.sprite.Sprite):
 
         if self.rect.right <= 0:
             self.kill()
+
+    def is_passed(self):
+        if self.rect.x < -2 and not self.passed:
+            self.passed = True
+            return True
+        return False
