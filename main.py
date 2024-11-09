@@ -3,7 +3,7 @@ import configs
 import assets
 from objects.background import Background
 from objects.floor import Floor
-from objects.column import Column
+from objects.obstacle import Obstacle
 from objects.bird import Bird
 import cv2 as cv
 import mediapipe as mp
@@ -72,15 +72,13 @@ while running:
             running = False
 
         if event.type == column_create_event:
-            Column(sprites)
+            Obstacle(sprites)
 
     # Update bird position based on the latest nose position in the queue
     if not face_data_queue.empty():
         nose_y = face_data_queue.get()
         bird.update_marker_position(nose_y)
 
-    # Clear screen and update sprites
-    screen.fill("black")
     sprites.draw(screen)
     sprites.update()
 
