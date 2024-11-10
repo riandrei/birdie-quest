@@ -8,6 +8,7 @@ from objects.bird import Bird
 from objects.score import Score
 from objects.menu import Menu
 from objects.game_over import GameOver
+from objects.scores import Scores
 import cv2 as cv
 import mediapipe as mp
 import threading
@@ -34,9 +35,9 @@ def create_sprites():
     Floor(0, sprites)
     Floor(1, sprites)
 
-    return Bird(sprites), Score(sprites), Menu(sprites), GameOver(sprites)
+    return Bird(sprites), Score(sprites), Menu(sprites), GameOver(sprites), Scores(sprites)
 
-bird, score, menu, game_over_object = create_sprites()
+bird, score, menu, game_over_object, scores = create_sprites()
 
 
 # Initialize OpenCV and MediaPipe FaceMesh
@@ -80,7 +81,18 @@ while running:
 
         if event.type == column_create_event:
             Obstacle(sprites)
-        if menu.show_menu:
+        if scores.show_scores:
+            scores_action = scores.handle_event(event)
+
+            if scores_action is not None:   
+                print(scores_action)
+                if scores_action == 0:
+                    menu.show_menu = True
+                    scores.clear()
+                    sprites.empty()
+                    bird, score, menu, game_over_object, scores = create_sprites()
+                    pass
+        elif menu.show_menu:
             action = menu.handle_event(event)
             if action is not None:
                 if action == 0:
@@ -88,15 +100,25 @@ while running:
                     clear = menu.clear()
                     gamestarted = True
                     pygame.time.set_timer(column_create_event, 2500)
+                    pass
+                elif action == 1:
+                    menu.show_menu = False
+                    clear = menu.clear()
+                    scores = Scores(sprites)
+                    scores.show_scores = True
+                    sprites.draw(screen)
+                    pygame.display.flip()   
+                    pass
                 elif action == 2:
                     running = False
+                    pass
         if gameover:
             action = game_over_object.handle_event(event)
             if action is not None:
                 if action == 0:
                     gameover = False
                     sprites.empty()
-                    bird, score, menu, game_over_object = create_sprites()
+                    bird, score, menu, game_over_object, scores = create_sprites()
                     gamestarted = True
                     menu.show_menu = False
                     menu.clear()
@@ -104,7 +126,7 @@ while running:
                 elif action == 1:
                     gameover = False
                     sprites.empty()
-                    bird, score, menu, game_over_object = create_sprites()
+                    bird, score, menu, game_over_object, scores = create_sprites()
                     gamestarted = False
                     game_over_object.clear()
 
@@ -113,10 +135,16 @@ while running:
         menu.update()
         pygame.display.flip()
         game_over_object.clear()
+        scores.clear()
     
     if gameover:
         sprites.draw(screen)
         game_over_object.update()
+        pygame.display.flip()
+
+    if scores.show_scores:
+        sprites.draw(screen)
+        scores.update()
         pygame.display.flip()
 
     if gamestarted:

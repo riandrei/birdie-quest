@@ -41,6 +41,7 @@ class Menu:
             elif event.key == pygame.K_RETURN:
                 return self.selected_option
         return None
+        
     def clear(self):
         for option in self.options:
             option.kill()

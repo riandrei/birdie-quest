@@ -1,4 +1,4 @@
-import pygame.sprite
+import pygame
 
 import assets
 import configs
@@ -50,6 +50,7 @@ class GameOver(pygame.sprite.Sprite):
             option.highlight(i == self.selected_option, self.option_names[i])
     
     def handle_event(self, event):
+        print('handle_event')
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 self.selected_option = (self.selected_option - 1) % len(self.options)
