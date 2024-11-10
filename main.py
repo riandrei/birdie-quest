@@ -7,6 +7,7 @@ from objects.obstacle import Obstacle
 from objects.bird import Bird
 from objects.score import Score
 from objects.menu import Menu
+from objects.game_over import GameOver
 import cv2 as cv
 import mediapipe as mp
 import threading
@@ -33,9 +34,10 @@ def create_sprites():
     Floor(0, sprites)
     Floor(1, sprites)
 
-    return Bird(sprites), Score(sprites), Menu(sprites)
+    return Bird(sprites), Score(sprites), Menu(sprites), GameOver(sprites)
 
-bird, score, menu = create_sprites()
+bird, score, menu, game_over_object = create_sprites()
+
 
 # Initialize OpenCV and MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh
@@ -88,15 +90,33 @@ while running:
                     pygame.time.set_timer(column_create_event, 2500)
                 elif action == 2:
                     running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE and gameover:
-                gameover = False
-                sprites.empty()
-                bird, score = create_sprites()
+        if gameover:
+            action = game_over_object.handle_event(event)
+            if action is not None:
+                if action == 0:
+                    gameover = False
+                    sprites.empty()
+                    bird, score, menu, game_over_object = create_sprites()
+                    gamestarted = True
+                    menu.show_menu = False
+                    menu.clear()
+                    game_over_object.clear()
+                elif action == 1:
+                    gameover = False
+                    sprites.empty()
+                    bird, score, menu, game_over_object = create_sprites()
+                    gamestarted = False
+                    game_over_object.clear()
 
     if menu.show_menu:
         sprites.draw(screen)
         menu.update()
+        pygame.display.flip()
+        game_over_object.clear()
+    
+    if gameover:
+        sprites.draw(screen)
+        game_over_object.update()
         pygame.display.flip()
 
     if gamestarted:
@@ -113,6 +133,7 @@ while running:
 
         if bird.check_collision(sprites) and not gameover:
             gameover = True
+            game_over_object = GameOver(sprites)
 
         for sprite in sprites:
             if type(sprite) is Obstacle and sprite.is_passed():

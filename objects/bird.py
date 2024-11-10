@@ -34,6 +34,9 @@ class Bird(pygame.sprite.Sprite):
         # Smoothly move toward target_y
         self.rect.y += (self.target_y - self.rect.y) * 0.2
 
+        if self.rect.x < 50:
+            self.rect.x += 1
+
         # Keep bird within screen bounds
         if self.rect.top < 0:
             self.rect.top = 0

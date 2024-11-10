@@ -21,7 +21,6 @@ class Score(pygame.sprite.Sprite):
         self.width = 0
 
         for str_value_char in self.str_value:
-            print(str_value_char)
             image = assets.get_sprite(str_value_char)
             self.images.append(image)
             self.width += image.get_width()
