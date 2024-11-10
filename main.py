@@ -14,6 +14,7 @@ import mediapipe as mp
 import threading
 import queue
 import time
+import json
 
 pygame.init()
 
@@ -74,6 +75,16 @@ def process_face_mesh():
 # Start face mesh processing in a separate thread
 threading.Thread(target=process_face_mesh, daemon=True).start()
 
+def load_scores():
+        try:
+            with open(Scores.FILE_PATH, 'r') as file:
+                scores = json.load(file)
+                # Sort scores by the score value (index 0), in descending order
+                scores.sort(key=lambda x: x[0], reverse=True)
+                return scores
+        except FileNotFoundError:
+            return [(100, datetime.now().strftime("%m-%d-%y")), (20, datetime.now().strftime("%m-%d-%y")), (30, datetime.now().strftime("%m-%d-%y"))]
+
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -85,7 +96,6 @@ while running:
             scores_action = scores.handle_event(event)
 
             if scores_action is not None:   
-                print(scores_action)
                 if scores_action == 0:
                     menu.show_menu = True
                     scores.clear()
@@ -123,12 +133,14 @@ while running:
                     menu.show_menu = False
                     menu.clear()
                     game_over_object.clear()
+                    scores.clear()
                 elif action == 1:
                     gameover = False
                     sprites.empty()
                     bird, score, menu, game_over_object, scores = create_sprites()
                     gamestarted = False
                     game_over_object.clear()
+                    scores.clear()
 
     if menu.show_menu:
         sprites.draw(screen)
@@ -162,6 +174,11 @@ while running:
         if bird.check_collision(sprites) and not gameover:
             gameover = True
             game_over_object = GameOver(sprites)
+            scores_data = load_scores()
+            if score.value > scores_data[-1][0]:
+                scores_data[-1] = (score.value, time.strftime("%m-%d-%y"))
+                with open('scores.json', 'w') as file:
+                    json.dump(scores_data, file)
 
         for sprite in sprites:
             if type(sprite) is Obstacle and sprite.is_passed():

@@ -9,7 +9,6 @@ import os
 
 class ScoreEntry(pygame.sprite.Sprite):
     def __init__(self, text, y_position, *groups):
-        print('test')
         self._layer = Layer.UI
         self.font = pygame.font.Font(None, 36)
         self.image = self.font.render(text, True, (255, 255, 255))
