@@ -5,6 +5,8 @@ import assets
 from layer import Layer
 from datetime import datetime
 
+import os
+
 class ScoreEntry(pygame.sprite.Sprite):
     def __init__(self, text, y_position, *groups):
         print('test')
@@ -63,7 +65,10 @@ class Scores:
     def load_scores(self):
         try:
             with open(Scores.FILE_PATH, 'r') as file:
-                return json.load(file)
+                scores = json.load(file)
+                # Sort scores by the score value (index 0), in descending order
+                scores.sort(key=lambda x: x[0], reverse=True)
+                return scores
         except FileNotFoundError:
             return [(100, datetime.now().strftime("%m-%d-%y")), (20, datetime.now().strftime("%m-%d-%y")), (30, datetime.now().strftime("%m-%d-%y"))]
 
