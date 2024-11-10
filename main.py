@@ -6,6 +6,7 @@ from objects.floor import Floor
 from objects.obstacle import Obstacle
 from objects.bird import Bird
 from objects.score import Score
+from objects.menu import Menu
 import cv2 as cv
 import mediapipe as mp
 import threading
@@ -19,6 +20,7 @@ clock = pygame.time.Clock()
 column_create_event = pygame.USEREVENT
 running = True
 gameover = False
+gamestarted = False
 
 assets.load_sprites()
 
@@ -31,10 +33,9 @@ def create_sprites():
     Floor(0, sprites)
     Floor(1, sprites)
 
-    return Bird(sprites), Score(sprites)
+    return Bird(sprites), Score(sprites), Menu(sprites)
 
-bird, score = create_sprites()
-
+bird, score, menu = create_sprites()
 
 # Initialize OpenCV and MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh
@@ -70,8 +71,6 @@ def process_face_mesh():
 # Start face mesh processing in a separate thread
 threading.Thread(target=process_face_mesh, daemon=True).start()
 
-pygame.time.set_timer(column_create_event, 2500)
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -79,34 +78,49 @@ while running:
 
         if event.type == column_create_event:
             Obstacle(sprites)
-        
+        if menu.show_menu:
+            action = menu.handle_event(event)
+            if action is not None:
+                if action == 0:
+                    menu.show_menu = False
+                    clear = menu.clear()
+                    gamestarted = True
+                    pygame.time.set_timer(column_create_event, 2500)
+                elif action == 2:
+                    running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE and gameover:
                 gameover = False
                 sprites.empty()
                 bird, score = create_sprites()
 
-    # Update bird position based on the latest nose position in the queue
-    if not face_data_queue.empty():
-        nose_y = face_data_queue.get()
-        bird.update_marker_position(nose_y)
+    if menu.show_menu:
+        sprites.draw(screen)
+        menu.update()
+        pygame.display.flip()
 
-    screen.fill((255, 255, 255))
-    sprites.draw(screen)
+    if gamestarted:
+        # Update bird position based on the latest nose position in the queue
+        if not face_data_queue.empty():
+            nose_y = face_data_queue.get()
+            bird.update_marker_position(nose_y)
 
-    if not gameover:
-        sprites.update()
+        screen.fill((255, 255, 255))
+        sprites.draw(screen)
 
-    if bird.check_collision(sprites) and not gameover:
-        gameover = True
+        if not gameover:
+            sprites.update()
 
-    for sprite in sprites:
-        if type(sprite) is Obstacle and sprite.is_passed():
-            score.value += 1
+        if bird.check_collision(sprites) and not gameover:
+            gameover = True
 
-    # Update display
-    pygame.display.flip()
-    clock.tick(configs.FPS)
+        for sprite in sprites:
+            if type(sprite) is Obstacle and sprite.is_passed():
+                score.value += 1
+
+        # Update display
+        pygame.display.flip()
+        clock.tick(configs.FPS)
 
 # Release resources
 VID_CAP.release()
