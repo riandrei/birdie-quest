@@ -5,7 +5,7 @@ from layer import Layer
 
 class Score(pygame.sprite.Sprite):
     def __init__(self, *groups):
-        self._layer = Layer.UI
+        self._layer = Layer.SCORE
         self.value = 0 
         self.image = pygame.surface.Surface((0, 0), pygame.SRCALPHA)
         

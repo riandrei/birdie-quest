@@ -3,30 +3,61 @@ import configs
 import assets
 from layer import Layer
 
+class GameName(pygame.sprite.Sprite):
+    def __init__(self, *groups):
+        self._layer = Layer.UI
+        self.image = assets.get_sprite('game_name')
+        self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, 100))
+        super().__init__(*groups)
+
 class MenuOption(pygame.sprite.Sprite):
     def __init__(self, option_name, y_position, *groups):
         self._layer = Layer.UI
-        self.image = assets.get_sprite(option_name)
+        self.original_image = assets.get_sprite(option_name)
+        self.image =  self.image = pygame.transform.scale(
+                self.original_image, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
         self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, y_position ))
         super().__init__(*groups)
     def highlight(self, is_selected, option_name):
         if is_selected:
-            highlight_surface = self.image.copy()
-            highlight_surface.fill((200, 200, 200), special_flags=pygame.BLEND_RGB_ADD)
-            self.image = highlight_surface
+            highlight_surface = self.original_image.copy().convert_alpha()
+            overlay = pygame.Surface(highlight_surface.get_size(), pygame.SRCALPHA)
+            overlay.fill((255, 255, 255, 100)) 
+        
+            highlight_surface.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            self.image = pygame.transform.scale(
+                highlight_surface, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
         else:
-            self.image = assets.get_sprite(option_name)
+            self.original_image = assets.get_sprite(option_name)
+            self.image =  self.image = pygame.transform.scale(
+                self.original_image, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
+
+class Overlay(pygame.sprite.Sprite):
+    def __init__(self, *groups):
+        self._layer = Layer.OVERLAY
+        self.image = pygame.Surface((configs.SCREEN_WIDTH, configs.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.image.fill((0, 0, 0, 200))
+        self.rect = self.image.get_rect()
+        super().__init__(*groups)
 
 class Menu:
     def __init__(self, sprites):
         self.options = [
-            MenuOption('start', configs.SCREEN_HEIGHT / 2 - 80, sprites),
-            MenuOption('scores', configs.SCREEN_HEIGHT / 2, sprites),
-            MenuOption('quit', configs.SCREEN_HEIGHT / 2 + 80, sprites)
+            MenuOption('start', configs.SCREEN_HEIGHT / 2 - 40, sprites),
+            MenuOption('scores', configs.SCREEN_HEIGHT / 2 + 40, sprites),
+            MenuOption('exit', configs.SCREEN_HEIGHT / 2 + 120, sprites)
         ]
+        self.game_name = GameName(sprites)
+        self.overlay = Overlay(sprites)
         self.selected_option = 0
         self.show_menu = True
-        self.option_names = ['start', 'scores', 'quit']
+        self.option_names = ['start', 'scores', 'exit']
     
     def update(self):
         for i, option in enumerate(self.options):
@@ -45,6 +76,8 @@ class Menu:
     def clear(self):
         for option in self.options:
             option.kill()
+        self.game_name.kill()
+        self.overlay.kill()
 
 
 

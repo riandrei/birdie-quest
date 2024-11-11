@@ -7,31 +7,37 @@ from layer import Layer
 class SmallObstacle(pygame.sprite.Sprite):
     def __init__(self, obstacle_top_gap, obstacle_bottom_gap, *groups):
         self._layer = Layer.OBSTACLE
-        self.image = assets.get_sprite('square-16')
-        self.rect = self.image.get_rect(bottomleft=(configs.SCREEN_WIDTH + random.randint(100, 280), random.randint(0, configs.SCREEN_HEIGHT)))
+        self.image = assets.get_sprite('ice-block')
+        
+        self.movement_direction = 'right' if random.random() < 0.5 else 'down'
+        if self.movement_direction == 'right':
+            self.rect = self.image.get_rect(bottomright=(-random.randint(100, 280), random.randint(0, configs.SCREEN_HEIGHT)))
+        else:
+            self.rect = self.image.get_rect(topleft=(random.randint(0, configs.SCREEN_WIDTH), -random.randint(100, 280)))
+        
         self.mask = pygame.mask.from_surface(self.image)
-
-        self.speed = 2
-        if random.random() < 0.5:  # 33% chance to be faster
-            self.speed = random.randint(2, 3)
+        self.speed = random.randint(2, 3) if random.random() < 0.5 else 2
 
         super().__init__(*groups)
 
     def update(self):
-        self.rect.x -= self.speed
-        if self.rect.right <= 0:
-            self.kill()
+        if self.movement_direction == 'right':
+            self.rect.x += self.speed
+            if self.rect.left >= configs.SCREEN_WIDTH:
+                self.kill()
+        elif self.movement_direction == 'down':
+            self.rect.y += self.speed
+            if self.rect.top >= configs.SCREEN_HEIGHT:
+                self.kill()
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, *groups):
         self._layer = Layer.PIPE
         self.gap = 100
 
-        self.sprite = assets.get_sprite('pipe-green')
+        self.sprite = assets.get_sprite('pipe-ice')
         self.sprite_rect = self.sprite.get_rect()
 
-
-        # Define pipe obstacles
         self.pipe_bottom = self.sprite
         self.pipe_bottom_rect = self.pipe_bottom.get_rect(topleft=(0, self.sprite_rect.height + self.gap))
 
@@ -45,7 +51,6 @@ class Obstacle(pygame.sprite.Sprite):
         
         self.mask = pygame.mask.from_surface(self.image)
 
-        # Set initial position of pipes
         sprite_floor_height = assets.get_sprite('floor').get_rect().height
         min_y = 100
         max_y = configs.SCREEN_HEIGHT - sprite_floor_height - 100
@@ -55,9 +60,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.gap_top_y = self.rect.y + self.pipe_top_rect.height
         self.gap_bottom_y = self.rect.y + self.pipe_top_rect.height + self.gap
 
-        # Spawn smaller obstacles
         self.small_obstacles = pygame.sprite.Group()
-        for _ in range(random.randint(3, 8)):  # Randomize the number of smaller obstacles
+        for _ in range(random.randint(3, 8)):
             small_obstacle = SmallObstacle(self.gap_top_y, self.gap_bottom_y, *groups)
 
         self.passed = False

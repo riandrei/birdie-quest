@@ -18,35 +18,57 @@ class ScoreEntry(pygame.sprite.Sprite):
 class ScoresText(pygame.sprite.Sprite):
     def __init__(self, *groups):
         self._layer = Layer.UI
-        self.image = assets.get_sprite('gameover')
+        self.image = assets.get_sprite('score_title')
         self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, configs.SCREEN_HEIGHT / 2 - 150))
         super().__init__(*groups)
 
 class BackButton(pygame.sprite.Sprite):
     def __init__(self, option_name, y_position, *groups):
         self._layer = Layer.UI
-        self.image = assets.get_sprite(option_name)
-        self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, y_position))
+        self.original_image = assets.get_sprite(option_name)
+        self.image =  self.image = pygame.transform.scale(
+                self.original_image, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
+        self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, y_position ))
         super().__init__(*groups)
-
     def highlight(self, is_selected, option_name):
         if is_selected:
-            highlight_surface = self.image.copy()
-            highlight_surface.fill((200, 200, 200), special_flags=pygame.BLEND_RGB_ADD)
-            self.image = highlight_surface
+            highlight_surface = self.original_image.copy().convert_alpha()
+            overlay = pygame.Surface(highlight_surface.get_size(), pygame.SRCALPHA)
+            overlay.fill((255, 255, 255, 100)) 
+        
+            highlight_surface.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            self.image = pygame.transform.scale(
+                highlight_surface, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
         else:
-            self.image = assets.get_sprite(option_name)
+            self.original_image = assets.get_sprite(option_name)
+            self.image = pygame.transform.scale(
+                self.original_image, 
+                (int(self.original_image.get_width() * 2), int(self.original_image.get_height() * 2))
+            )
+
+class Overlay(pygame.sprite.Sprite):
+    def __init__(self, *groups):
+        self._layer = Layer.OVERLAY
+        self.image = pygame.Surface((configs.SCREEN_WIDTH, configs.SCREEN_HEIGHT), pygame.SRCALPHA)
+        self.image.fill((0, 0, 0, 200)) 
+        self.rect = self.image.get_rect()
+        super().__init__(*groups)
 
 class Scores:
     FILE_PATH = 'scores.json'
 
     def __init__(self, sprites):
         self.options = [
-            BackButton('start', configs.SCREEN_HEIGHT - 50, sprites),
+            BackButton('back', configs.SCREEN_HEIGHT - 50, sprites),
         ]
+        self.overlay = Overlay(sprites)
         self.scores_text = ScoresText(sprites)
         self.selected_option = 0
-        self.option_names = ['start']
+        self.option_names = ['back']
 
         self.entries = []
         self.scores = self.load_scores()
@@ -77,6 +99,7 @@ class Scores:
         for option in self.options:
             option.kill()
         self.scores_text.kill()
+        self.overlay.kill()
 
     def update(self):
         for i, option in enumerate(self.options):

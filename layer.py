@@ -6,4 +6,6 @@ class Layer(IntEnum):
     PIPE = auto()
     FLOOR = auto()
     PLAYER = auto()
+    SCORE = auto()
+    OVERLAY = auto()
     UI = auto()

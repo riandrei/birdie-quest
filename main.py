@@ -1,6 +1,13 @@
 import pygame
 import configs
 import assets
+import cv2 as cv
+import mediapipe as mp
+import threading
+import queue
+import time
+import json
+
 from objects.background import Background
 from objects.floor import Floor
 from objects.obstacle import Obstacle
@@ -9,12 +16,6 @@ from objects.score import Score
 from objects.menu import Menu
 from objects.game_over import GameOver
 from objects.scores import Scores
-import cv2 as cv
-import mediapipe as mp
-import threading
-import queue
-import time
-import json
 
 pygame.init()
 
@@ -47,7 +48,8 @@ VID_CAP = cv.VideoCapture(0)
 VID_CAP.set(cv.CAP_PROP_FPS, 15)  # Limit webcam to 15 FPS
 
 # Queue for face mesh results
-face_data_queue = queue.Queue()
+face_data_queue_y = queue.Queue()
+face_data_queue_x = queue.Queue()
 
 def process_face_mesh():
     with mp_face_mesh.FaceMesh(
@@ -70,7 +72,10 @@ def process_face_mesh():
             # Get nose position if face is detected
             if results.multi_face_landmarks:
                 nose_y = results.multi_face_landmarks[0].landmark[94].y
-                face_data_queue.put(nose_y)
+                nose_x = results.multi_face_landmarks[0].landmark[94].x
+                face_data_queue_y.put(nose_y)
+                face_data_queue_x.put(nose_x)
+
 
 # Start face mesh processing in a separate thread
 threading.Thread(target=process_face_mesh, daemon=True).start()
@@ -161,9 +166,11 @@ while running:
 
     if gamestarted:
         # Update bird position based on the latest nose position in the queue
-        if not face_data_queue.empty():
-            nose_y = face_data_queue.get()
-            bird.update_marker_position(nose_y)
+        if not face_data_queue_x.empty() and not face_data_queue_y.empty():
+            nose_y = face_data_queue_y.get()
+            nose_x = face_data_queue_x.get()
+            
+            bird.update_marker_position(nose_x, nose_y)
 
         screen.fill((255, 255, 255))
         sprites.draw(screen)
@@ -173,7 +180,7 @@ while running:
 
         if bird.check_collision(sprites) and not gameover:
             gameover = True
-            game_over_object = GameOver(sprites)
+            game_over_object = GameOver(sprites, score.value)
             scores_data = load_scores()
             if score.value > scores_data[-1][0]:
                 scores_data[-1] = (score.value, time.strftime("%m-%d-%y"))
