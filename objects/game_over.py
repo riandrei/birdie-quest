@@ -80,7 +80,7 @@ class GameOver(pygame.sprite.Sprite):
     FILE_PATH = 'scores.json'
     def __init__(self, sprites,current_score=0,):
         self.scores = self.load_scores()
-        self.best_score = self.scores[0][0]
+        self.best_score = self.scores[0][0] if len(self.scores) > 0 else 0
         self.game_over_board = GameOverBoard(sprites)
         self.game_over_message = GameOverMessage(sprites)
         self.game_over_best = GameOverScores('best', configs.SCREEN_HEIGHT / 2 - 20, self.best_score, sprites)

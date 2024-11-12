@@ -182,10 +182,15 @@ while running:
             gameover = True
             game_over_object = GameOver(sprites, score.value)
             scores_data = load_scores()
-            if score.value > scores_data[-1][0]:
-                scores_data[-1] = (score.value, time.strftime("%m-%d-%y"))
-                with open('scores.json', 'w') as file:
-                    json.dump(scores_data, file)
+            if score.value > 0:
+                if len(scores_data) < 10:
+                    scores_data.append((score.value, time.strftime("%m-%d-%y")))
+                    with open('scores.json', 'w') as file:
+                        json.dump(scores_data, file)
+                else:
+                    scores_data[-1] = (score.value, time.strftime("%m-%d-%y"))
+                    with open('scores.json', 'w') as file:
+                        json.dump(scores_data, file)
 
         for sprite in sprites:
             if type(sprite) is Obstacle and sprite.is_passed():

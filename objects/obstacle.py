@@ -11,19 +11,19 @@ class SmallObstacle(pygame.sprite.Sprite):
         
         self.movement_direction = 'right' if random.random() < 0.5 else 'down'
         if self.movement_direction == 'right':
-            self.rect = self.image.get_rect(bottomright=(-random.randint(100, 280), random.randint(0, configs.SCREEN_HEIGHT)))
+            self.rect = self.image.get_rect(bottomleft=(configs.SCREEN_WIDTH + random.randint(100, 280), random.randint(0, configs.SCREEN_HEIGHT)))
         else:
             self.rect = self.image.get_rect(topleft=(random.randint(0, configs.SCREEN_WIDTH), -random.randint(100, 280)))
         
         self.mask = pygame.mask.from_surface(self.image)
-        self.speed = random.randint(2, 3) if random.random() < 0.5 else 2
+        self.speed = random.uniform(2, 3) if random.random() < 0.5 else 2
 
         super().__init__(*groups)
 
     def update(self):
         if self.movement_direction == 'right':
-            self.rect.x += self.speed
-            if self.rect.left >= configs.SCREEN_WIDTH:
+            self.rect.x -= self.speed
+            if self.rect.right <= 0:
                 self.kill()
         elif self.movement_direction == 'down':
             self.rect.y += self.speed
@@ -51,7 +51,7 @@ class Obstacle(pygame.sprite.Sprite):
         
         self.mask = pygame.mask.from_surface(self.image)
 
-        sprite_floor_height = assets.get_sprite('floor').get_rect().height
+        sprite_floor_height = assets.get_sprite('gnd').get_rect().height
         min_y = 100
         max_y = configs.SCREEN_HEIGHT - sprite_floor_height - 100
 
