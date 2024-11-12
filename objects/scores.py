@@ -6,6 +6,19 @@ from layer import Layer
 from datetime import datetime
 
 import os
+import sys
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+def get_scores_file_path():
+    # This will store scores.json in the AppData folder on Windows or ~/.config on Linux/Mac
+    app_data_folder = os.path.join(os.getenv('APPDATA') or os.path.expanduser("~/.config"), "FlightFrenzy")
+    os.makedirs(app_data_folder, exist_ok=True)
+    return os.path.join(app_data_folder, "scores.json")
 
 class ScoreEntry(pygame.sprite.Sprite):
     def __init__(self, text, y_position, *groups):
@@ -59,8 +72,6 @@ class Overlay(pygame.sprite.Sprite):
         super().__init__(*groups)
 
 class Scores:
-    FILE_PATH = 'scores.json'
-
     def __init__(self, sprites):
         self.options = [
             BackButton('back', configs.SCREEN_HEIGHT - 50, sprites),
@@ -85,14 +96,17 @@ class Scores:
     
     def load_scores(self):
         try:
-            with open(Scores.FILE_PATH, 'r') as file:
+            # Use resource_path to locate the JSON file
+            file_path = get_scores_file_path()
+            with open(file_path, 'r') as file:
                 scores = json.load(file)
                 # Sort scores by the score value (index 0), in descending order
                 scores.sort(key=lambda x: x[0], reverse=True)
                 return scores
         except FileNotFoundError:
-            return [(100, datetime.now().strftime("%m-%d-%y")), (20, datetime.now().strftime("%m-%d-%y")), (30, datetime.now().strftime("%m-%d-%y"))]
-
+            # Return default scores if file not found
+            return []
+        
     def clear(self):
         for entry in self.entries:
             entry.kill()

@@ -74,8 +74,9 @@ class Obstacle(pygame.sprite.Sprite):
         if self.rect.right <= 0:
             self.kill()
 
-    def is_passed(self):
-        if self.rect.x < -2 and not self.passed:
+    def is_passed(self, bird_x_position):
+        print(bird_x_position, self.rect.x)
+        if self.rect.x < bird_x_position and not self.passed:
             self.passed = True
             return True
         return False

@@ -15,9 +15,10 @@ from objects.bird import Bird
 from objects.score import Score
 from objects.menu import Menu
 from objects.game_over import GameOver
-from objects.scores import Scores
+from objects.scores import Scores, get_scores_file_path
 
 pygame.init()
+pygame.display.set_caption('Flight Frenzy')
 
 screen = pygame.display.set_mode((configs.SCREEN_WIDTH, configs.SCREEN_HEIGHT)) 
 clock = pygame.time.Clock()
@@ -27,6 +28,8 @@ gameover = False
 gamestarted = False
 
 assets.load_sprites()
+
+pygame.display.set_icon(assets.get_sprite('blue_lost'))
 
 sprites = pygame.sprite.LayeredUpdates()
 
@@ -79,16 +82,6 @@ def process_face_mesh():
 
 # Start face mesh processing in a separate thread
 threading.Thread(target=process_face_mesh, daemon=True).start()
-
-def load_scores():
-        try:
-            with open(Scores.FILE_PATH, 'r') as file:
-                scores = json.load(file)
-                # Sort scores by the score value (index 0), in descending order
-                scores.sort(key=lambda x: x[0], reverse=True)
-                return scores
-        except FileNotFoundError:
-            return [(100, datetime.now().strftime("%m-%d-%y")), (20, datetime.now().strftime("%m-%d-%y")), (30, datetime.now().strftime("%m-%d-%y"))]
 
 while running:
     for event in pygame.event.get():
@@ -181,19 +174,21 @@ while running:
         if bird.check_collision(sprites) and not gameover:
             gameover = True
             game_over_object = GameOver(sprites, score.value)
-            scores_data = load_scores()
+
+            scores_file_path = get_scores_file_path()
+            scores_data = Scores.load_scores(Scores)
             if score.value > 0:
                 if len(scores_data) < 10:
                     scores_data.append((score.value, time.strftime("%m-%d-%y")))
-                    with open('scores.json', 'w') as file:
+                    with open(scores_file_path, 'w') as file:
                         json.dump(scores_data, file)
                 else:
                     scores_data[-1] = (score.value, time.strftime("%m-%d-%y"))
-                    with open('scores.json', 'w') as file:
+                    with open(scores_file_path, 'w') as file:
                         json.dump(scores_data, file)
 
         for sprite in sprites:
-            if type(sprite) is Obstacle and sprite.is_passed():
+            if type(sprite) is Obstacle and sprite.is_passed(bird.rect.x):
                 score.value += 1
 
         # Update display
