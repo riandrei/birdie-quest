@@ -4,6 +4,7 @@ import assets
 import configs
 import json
 from layer import Layer
+from objects.scores import Scores
 
 class GameOverButton(pygame.sprite.Sprite):
     def __init__(self, option_name, y_position, *groups):
@@ -77,10 +78,9 @@ class Overlay(pygame.sprite.Sprite):
         super().__init__(*groups)
 
 class GameOver(pygame.sprite.Sprite):
-    FILE_PATH = 'scores.json'
     def __init__(self, sprites,current_score=0,):
-        self.scores = self.load_scores()
-        self.best_score = self.scores[0][0]
+        self.scores = Scores.load_scores(Scores)
+        self.best_score = self.scores[0][0] if len(self.scores) > 0 else 0
         self.game_over_board = GameOverBoard(sprites)
         self.game_over_message = GameOverMessage(sprites)
         self.game_over_best = GameOverScores('best', configs.SCREEN_HEIGHT / 2 - 20, self.best_score, sprites)
@@ -116,14 +116,5 @@ class GameOver(pygame.sprite.Sprite):
         self.overlay.kill()
         self.game_over_best.kill()
         self.game_over_score.kill()
-
-    def load_scores(self):
-        try:
-            with open(GameOver.FILE_PATH, 'r') as file:
-                scores = json.load(file)
-                scores.sort(key=lambda x: x[0], reverse=True)
-                return scores
-        except FileNotFoundError:
-            return [(100, datetime.now().strftime("%m-%d-%y")), (20, datetime.now().strftime("%m-%d-%y")), (30, datetime.now().strftime("%m-%d-%y"))]
         
         

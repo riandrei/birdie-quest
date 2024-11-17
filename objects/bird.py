@@ -17,7 +17,7 @@ class Bird(pygame.sprite.Sprite):
         ]
 
         self.image = self.images[0]
-        sprite_floor_height = assets.get_sprite('floor').get_rect().height
+        sprite_floor_height = assets.get_sprite('gnd').get_rect().height
         self.rect = self.image.get_rect(topleft=(0, (configs.SCREEN_HEIGHT - sprite_floor_height) // 2))
 
         self.mask = pygame.mask.from_surface(self.image)
