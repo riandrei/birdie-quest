@@ -18,6 +18,7 @@ from objects.game_over import GameOver
 from objects.scores import Scores, get_scores_file_path
 
 pygame.init()
+pygame.mixer.init()
 pygame.display.set_caption('Flight Frenzy')
 
 screen = pygame.display.set_mode((configs.SCREEN_WIDTH, configs.SCREEN_HEIGHT)) 
@@ -32,6 +33,13 @@ assets.load_sprites()
 pygame.display.set_icon(assets.get_sprite('blue_lost'))
 
 sprites = pygame.sprite.LayeredUpdates()
+
+collision_sound = pygame.mixer.Sound('assets/audios/hit.wav')
+point_sound = pygame.mixer.Sound('assets/audios/point.wav')
+
+pygame.mixer.music.load('assets/audios/bgm.ogg')
+
+pygame.mixer.music.play(-1)
 
 def create_sprites():
     Background(0, sprites)
@@ -175,6 +183,8 @@ while running:
             gameover = True
             game_over_object = GameOver(sprites, score.value)
 
+            collision_sound.play()
+
             scores_file_path = get_scores_file_path()
             scores_data = Scores.load_scores(Scores)
             if score.value > 0:
@@ -190,6 +200,7 @@ while running:
         for sprite in sprites:
             if type(sprite) is Obstacle and sprite.is_passed(bird.rect.x):
                 score.value += 1
+                point_sound.play()
 
         # Update display
         pygame.display.flip()
