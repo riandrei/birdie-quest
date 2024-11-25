@@ -15,7 +15,7 @@ from objects.bird import Bird
 from objects.score import Score
 from objects.menu import Menu
 from objects.game_over import GameOver
-from objects.scores import Scores, get_scores_file_path
+from objects.scores import Scores, get_scores_file_path, resource_path
 
 pygame.init()
 pygame.mixer.init()
@@ -34,10 +34,10 @@ pygame.display.set_icon(assets.get_sprite('blue_lost'))
 
 sprites = pygame.sprite.LayeredUpdates()
 
-collision_sound = pygame.mixer.Sound('assets/audios/hit.wav')
-point_sound = pygame.mixer.Sound('assets/audios/point.wav')
+collision_sound = pygame.mixer.Sound(resource_path('assets/audios/hit.wav'))
+point_sound = pygame.mixer.Sound(resource_path('assets/audios/point.wav'))
 
-pygame.mixer.music.load('assets/audios/bgm.ogg')
+pygame.mixer.music.load(resource_path('assets/audios/bgm.ogg'))
 
 pygame.mixer.music.play(-1)
 
@@ -52,6 +52,17 @@ def create_sprites():
 
 bird, score, menu, game_over_object, scores = create_sprites()
 
+def show_splash_screen():
+    splash_screen = pygame.image.load(resource_path('assets/sprites/splashscreen.jpg'))
+    font = pygame.font.Font(None, 74)
+    text = font.render("Loading...", True, (255, 255, 255))
+    splash_screen.blit(text, (configs.SCREEN_WIDTH // 2 - text.get_width() // 2, configs.SCREEN_HEIGHT - 70))
+    screen.blit(splash_screen, (0, 0))
+    pygame.display.flip() 
+
+show_splash_screen()
+
+time.delay(3000)
 
 # Initialize OpenCV and MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh
