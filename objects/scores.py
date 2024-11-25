@@ -123,4 +123,15 @@ class Scores:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 return self.selected_option
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left-click
+                print("Left mouse button clicked")
+                for i, option in enumerate(self.options):
+                    if option.rect.collidepoint(event.pos):
+                        print(f"{self.option_names[i]} selected via left-click")
+                        return i
+        if event.type == pygame.MOUSEMOTION:
+            for i, option in enumerate(self.options):
+                if option.rect.collidepoint(event.pos):
+                    self.selected_option = i
         return None
