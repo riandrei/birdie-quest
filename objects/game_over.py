@@ -9,35 +9,34 @@ from objects.scores import Scores
 class GameOverButton(pygame.sprite.Sprite):
     def __init__(self, option_name, y_position, *groups):
         self._layer = Layer.UI
-        self.image = assets.get_sprite(option_name)
+        self.sprite = assets.get_sprite(option_name)
+        self.image = pygame.transform.scale(self.sprite, (120, 60))
         self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, y_position))
         super().__init__(*groups)
 
     def highlight(self, is_selected, option_name):
         if is_selected:
-            highlight_surface = self.image.copy()
-            highlight_surface.fill((255, 255, 0), special_flags=pygame.BLEND_RGB_ADD)
-            self.image = highlight_surface
+            highlight_surface = self.sprite.copy().convert_alpha()
+            overlay = pygame.Surface(highlight_surface.get_size(), pygame.SRCALPHA)
+            overlay.fill((255, 255, 255, 100)) 
+
+            highlight_surface.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            self.image = pygame.transform.scale(
+                highlight_surface, 
+                (120, 60)
+            )
         else:
-            self.image = assets.get_sprite(option_name)
+            self.sprite = assets.get_sprite(option_name)
+            self.image = pygame.transform.scale(
+                self.sprite, 
+                (120, 60)
+            )
 
 class GameOverMessage(pygame.sprite.Sprite):
     def __init__(self, *groups):
         self._layer = Layer.UI
         self.image = assets.get_sprite('gameover')
         self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, configs.SCREEN_HEIGHT / 2 - 100))
-        super().__init__(*groups)
-
-class GameOverBoard(pygame.sprite.Sprite):
-    def __init__(self, *groups):
-        self._layer = Layer.UI
-        self.original_image = assets.get_sprite('ice_frame')
-        self.image = pygame.transform.scale(
-                self.original_image, 
-                (int(self.original_image.get_width() * 1.5), int(self.original_image.get_height() * 1.5))
-            )
-
-        self.rect = self.image.get_rect(center=(configs.SCREEN_WIDTH / 2, configs.SCREEN_HEIGHT/ 2 + 110))
         super().__init__(*groups)
 
 class GameOverScores(pygame.sprite.Sprite):
@@ -81,14 +80,13 @@ class GameOver(pygame.sprite.Sprite):
     def __init__(self, sprites,current_score=0,):
         self.scores = Scores.load_scores(Scores)
         self.best_score = self.scores[0][0] if len(self.scores) > 0 else 0
-        self.game_over_board = GameOverBoard(sprites)
         self.game_over_message = GameOverMessage(sprites)
         self.game_over_best = GameOverScores('best', configs.SCREEN_HEIGHT / 2 - 20, self.best_score, sprites)
         self.game_over_score = GameOverScores('score', configs.SCREEN_HEIGHT / 2 + 20, current_score, sprites)
 
         self.options = [
-            GameOverButton('retry', configs.SCREEN_HEIGHT / 2 + 100, sprites),
-            GameOverButton('home', configs.SCREEN_HEIGHT/ 2 + 120, sprites),
+            GameOverButton('retry', configs.SCREEN_HEIGHT / 2 + 80, sprites),
+            GameOverButton('home', configs.SCREEN_HEIGHT/ 2 + 160, sprites),
         ]
         self.overlay = Overlay(sprites)
         self.selected_option = 0
@@ -122,7 +120,6 @@ class GameOver(pygame.sprite.Sprite):
     def clear(self):
         for option in self.options:
             option.kill()
-        self.game_over_board.kill()
         self.game_over_message.kill()
         self.overlay.kill()
         self.game_over_best.kill()

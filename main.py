@@ -19,7 +19,7 @@ from objects.scores import Scores, get_scores_file_path, resource_path
 
 pygame.init()
 pygame.mixer.init()
-pygame.display.set_caption('Flight Frenzy')
+pygame.display.set_caption('Birdie Quest')
 
 screen = pygame.display.set_mode((configs.SCREEN_WIDTH, configs.SCREEN_HEIGHT)) 
 clock = pygame.time.Clock()
@@ -30,7 +30,7 @@ gamestarted = False
 
 assets.load_sprites()
 
-pygame.display.set_icon(assets.get_sprite('blue_lost'))
+pygame.display.set_icon(assets.get_sprite('Game_Icon'))
 
 sprites = pygame.sprite.LayeredUpdates()
 
@@ -53,17 +53,13 @@ def create_sprites():
 bird, score, menu, game_over_object, scores = create_sprites()
 
 def show_splash_screen():
-    splash_screen = pygame.image.load(resource_path('assets/sprites/splashscreen.jpg'))
-    font = pygame.font.Font(None, 74)
-    text = font.render("Loading...", True, (255, 255, 255))
-    splash_screen.blit(text, (configs.SCREEN_WIDTH // 2 - text.get_width() // 2, configs.SCREEN_HEIGHT - 70))
+    splash_screen = pygame.image.load(resource_path('assets/sprites/loadingscreen.jpg'))
     screen.blit(splash_screen, (0, 0))
     pygame.display.flip() 
 
 show_splash_screen()
 
-time.delay(3000)
-
+pygame.time.delay(3000)
 # Initialize OpenCV and MediaPipe FaceMesh
 mp_face_mesh = mp.solutions.face_mesh
 VID_CAP = cv.VideoCapture(0)
