@@ -53,12 +53,6 @@ If you don't want to install Python and dependencies, you can download the execu
 └── README.md          # This file
 ```
 
-## Acknowledgments
-
-- **Pygame** - For game development.
-- **OpenCV & MediaPipe** - For face tracking.
-- **Flappy Bird** - The original inspiration for this game.
-
 ## License
 
 This project is open-source under the MIT License.
